@@ -53,7 +53,7 @@ fn main() -> Result<()> {
 
     let mut server = EspHttpServer::new(&esp_idf_svc::http::server::Configuration::default())?;
 
-    server.fn_handler("/camera.jpg", Method::Get, |request| {
+    server.fn_handler::<anyhow::Error, _>("/camera.jpg", Method::Get, move |request| {
         let framebuffer = camera.get_framebuffer();
 
         if let Some(framebuffer) = framebuffer {
@@ -73,7 +73,7 @@ fn main() -> Result<()> {
         Ok(())
     })?;
 
-    server.fn_handler("/", Method::Get, |request| {
+    server.fn_handler::<anyhow::Error, _>("/", Method::Get, |request| {
         let mut response = request.into_ok_response()?;
         response.write_all("ok".as_bytes())?;
         Ok(())
