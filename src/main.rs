@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use esp_idf_hal::gpio::AnyIOPin;
+use esp_idf_svc::hal::gpio::AnyIOPin;
 use esp_idf_svc::hal::peripherals::Peripherals;
 use espcam::espcam::Camera;
 
@@ -26,8 +26,8 @@ fn main() -> Result<()> {
         peripherals.pins.gpio13, // pin_pclk
         peripherals.pins.gpio4,  // pin_sda
         peripherals.pins.gpio5,  // pin_scl
-        esp_idf_sys::camera::pixformat_t_PIXFORMAT_JPEG,
-        esp_idf_sys::camera::framesize_t_FRAMESIZE_UXGA,
+        esp_idf_svc::sys::camera::pixformat_t_PIXFORMAT_JPEG,
+        esp_idf_svc::sys::camera::framesize_t_FRAMESIZE_UXGA,
     )
     .unwrap();
 

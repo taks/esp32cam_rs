@@ -239,8 +239,8 @@ impl<'a> Camera<'a> {
         pin_scl: impl Peripheral<P = impl InputPin + OutputPin> + 'a,
         pixel_format: camera::pixformat_t,
         frame_size: camera::framesize_t,
-    ) -> Result<Self, esp_idf_sys::EspError> {
-        esp_idf_hal::into_ref!(
+    ) -> Result<Self, EspError> {
+        esp_idf_svc::hal::into_ref!(
             pin_xclk, pin_d0, pin_d1, pin_d2, pin_d3, pin_d4, pin_d5, pin_d6, pin_d7, pin_vsync,
             pin_href, pin_pclk, pin_sda, pin_scl
         );
@@ -262,8 +262,8 @@ impl<'a> Camera<'a> {
             pin_pclk: pin_pclk.pin(),
 
             xclk_freq_hz: 20000000,
-            ledc_timer: esp_idf_sys::ledc_timer_t_LEDC_TIMER_0,
-            ledc_channel: esp_idf_sys::ledc_channel_t_LEDC_CHANNEL_0,
+            ledc_timer: esp_idf_svc::sys::ledc_timer_t_LEDC_TIMER_0,
+            ledc_channel: esp_idf_svc::sys::ledc_channel_t_LEDC_CHANNEL_0,
 
             pixel_format,
             frame_size,
@@ -284,7 +284,7 @@ impl<'a> Camera<'a> {
             ..Default::default()
         };
 
-        esp_idf_sys::esp!(unsafe { camera::esp_camera_init(&config) })?;
+        esp!(unsafe { camera::esp_camera_init(&config) })?;
         Ok(Self { _p: PhantomData })
     }
 
