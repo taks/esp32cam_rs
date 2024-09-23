@@ -19,9 +19,9 @@ default = ["std", "embassy", "esp-idf-svc/native"]
 
 std = ["alloc", "esp-idf-svc/binstart", "esp-idf-svc/std"]
 alloc = ["esp-idf-svc/alloc"]
-nightly = ["esp-idf-svc/nightly"]
-experimental = ["esp-idf-svc/experimental"]
 embassy = ["esp-idf-svc/embassy-sync", "esp-idf-svc/critical-section", "esp-idf-svc/embassy-time-driver"]
+
+ble = ["dep:esp32-nimble"]
 
 [dependencies]
 log = { version = "0.4", default-features = false }
@@ -30,7 +30,7 @@ embedded-svc = "0.28.0"
 anyhow = "1.0.79"
 
 bstr = { version = "1.8.0", default-features = false }
-esp32-nimble = "0.7.0"
+esp32-nimble = { version = "0.8.0", optional = true }
 tokio = { version = "*", features = ["rt", "time", "sync","macros"] }
 lazy_static = "1.4.0"
 uuid = { version = "1.2.2", default-features = false, features = ["macro-diagnostics"] }
