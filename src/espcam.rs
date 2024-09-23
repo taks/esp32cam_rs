@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
-use esp_idf_hal::gpio::*;
-use esp_idf_hal::peripheral::Peripheral;
-use esp_idf_sys::*;
+use esp_idf_svc::hal::gpio::*;
+use esp_idf_svc::hal::peripheral::Peripheral;
+use esp_idf_svc::sys::*;
 
 pub struct FrameBuffer<'a> {
     fb: &'a mut camera::camera_fb_t,
