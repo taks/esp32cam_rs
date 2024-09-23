@@ -48,7 +48,6 @@ idotmatrix = {git = "https://github.com/Kezii/idotmatrix.git"}
 
 [[package.metadata.esp-idf-sys.extra_components]]
 remote_component = { name = "espressif/esp32-camera", version = "2.0.8" }
-component_dirs = "components/esp32-camera"
 bindings_header = "components/bindings.h"
 bindings_module = "camera"
 
