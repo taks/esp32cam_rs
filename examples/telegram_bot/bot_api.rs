@@ -159,6 +159,7 @@ pub enum EspBotError {
     Serde(#[from] serde_json::Error),
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct HttpError {
     pub code: u16,

@@ -1,7 +1,7 @@
 use crate::Camera;
 use anyhow::Result;
 use bstr::ByteSlice;
-use esp32_nimble::{uuid128, BLEClient, BLEDevice, BLEReturnCode};
+use esp32_nimble::{uuid128, BLEClient, BLEDevice};
 use esp_idf_sys::camera;
 use espcam::espcam::FrameBuffer;
 use image::{ImageBuffer, ImageFormat, Rgb};
