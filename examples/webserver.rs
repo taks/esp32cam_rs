@@ -1,10 +1,11 @@
-use anyhow::{bail, Result};
-
+use anyhow::Result;
 use esp_idf_hal::io::Write;
 use esp_idf_svc::{
     eventloop::EspSystemEventLoop,
     hal::{gpio::AnyIOPin, peripherals::Peripherals},
-    http::{server::EspHttpServer, Method}, io::Write,
+    http::{server::EspHttpServer, Method},
+    io::Write,
+    wifi::{AccessPointConfiguration, AuthMethod, BlockingWifi, Configuration, EspWifi},
 };
 use espcam::{config::get_config, espcam::Camera};
 
