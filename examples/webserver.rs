@@ -3,10 +3,10 @@ use anyhow::{bail, Result};
 use esp_idf_hal::io::Write;
 use esp_idf_svc::{
     eventloop::EspSystemEventLoop,
-    hal::peripherals::Peripherals,
-    http::{server::EspHttpServer, Method},
+    hal::{gpio::AnyIOPin, peripherals::Peripherals},
+    http::{server::EspHttpServer, Method}, io::Write,
 };
-use espcam::{config::get_config, espcam::Camera, wifi_handler::my_wifi};
+use espcam::{config::get_config, espcam::Camera};
 
 fn main() -> Result<()> {
     esp_idf_svc::sys::link_patches();
@@ -18,40 +18,49 @@ fn main() -> Result<()> {
 
     let config = get_config();
 
-    let _wifi = match my_wifi(
-        config.wifi_ssid,
-        config.wifi_psk,
-        peripherals.modem,
-        sysloop,
-    ) {
-        Ok(inner) => inner,
-        Err(err) => {
-            bail!("Could not connect to Wi-Fi network: {:?}", err)
-        }
-    };
-
     let camera = Camera::new(
-        peripherals.pins.gpio32,
-        peripherals.pins.gpio0,
-        peripherals.pins.gpio5,
-        peripherals.pins.gpio18,
-        peripherals.pins.gpio19,
-        peripherals.pins.gpio21,
-        peripherals.pins.gpio36,
-        peripherals.pins.gpio39,
-        peripherals.pins.gpio34,
-        peripherals.pins.gpio35,
-        peripherals.pins.gpio25,
-        peripherals.pins.gpio23,
-        peripherals.pins.gpio22,
-        peripherals.pins.gpio26,
-        peripherals.pins.gpio27,
-        esp_idf_sys::camera::pixformat_t_PIXFORMAT_JPEG,
-        esp_idf_sys::camera::framesize_t_FRAMESIZE_UXGA,
+        None::<AnyIOPin>,        // pin_pwdn
+        peripherals.pins.gpio15, // pin_xclk
+        peripherals.pins.gpio11, // pin_d0
+        peripherals.pins.gpio9,  // pin_d1
+        peripherals.pins.gpio8,  // pin_d2
+        peripherals.pins.gpio10, // pin_d3
+        peripherals.pins.gpio12, // pin_d4
+        peripherals.pins.gpio18, // pin_d5
+        peripherals.pins.gpio17, // pin_d6
+        peripherals.pins.gpio16, // pin_d7
+        peripherals.pins.gpio6,  // pin_vsync
+        peripherals.pins.gpio7,  // pin_href
+        peripherals.pins.gpio13, // pin_pclk
+        peripherals.pins.gpio4,  // pin_sda
+        peripherals.pins.gpio5,  // pin_scl
+        esp_idf_svc::sys::camera::pixformat_t_PIXFORMAT_JPEG,
+        esp_idf_svc::sys::camera::framesize_t_FRAMESIZE_UXGA,
     )
     .unwrap();
 
-    let mut server = EspHttpServer::new(&esp_idf_svc::http::server::Configuration::default())?;
+    let mut wifi = BlockingWifi::wrap(
+        EspWifi::new(peripherals.modem, sys_loop.clone(), Some(nvs))?,
+        sys_loop,
+    )?;
+
+    wifi.set_configuration(&Configuration::AccessPoint(AccessPointConfiguration {
+        ssid: config.wifi_ssid.try_into().unwrap(),
+        ssid_hidden: false,
+        password: config.wifi_psk.try_into().unwrap(),
+        auth_method: AuthMethod::WPA2Personal,
+        channel: 11,
+        ..Default::default()
+    }))?;
+
+    wifi.start()?;
+    wifi.wait_netif_up()?;
+
+    let server_configuration = esp_idf_svc::http::server::Configuration {
+        stack_size: 10240,
+        ..Default::default()
+    };
+    let mut server = EspHttpServer::new(&server_configuration)?;
 
     server.fn_handler::<anyhow::Error, _>("/camera.jpg", Method::Get, move |request| {
         let framebuffer = camera.get_framebuffer();
