@@ -1,11 +1,11 @@
 use anyhow::Result;
-use esp_idf_hal::io::Write;
 use esp_idf_svc::{
     eventloop::EspSystemEventLoop,
     hal::{gpio::AnyIOPin, peripherals::Peripherals},
     http::{server::EspHttpServer, Method},
     io::Write,
     wifi::{AccessPointConfiguration, AuthMethod, BlockingWifi, Configuration, EspWifi},
+    nvs::EspDefaultNvsPartition,
 };
 use espcam::{config::get_config, espcam::Camera};
 
@@ -13,9 +13,9 @@ fn main() -> Result<()> {
     esp_idf_svc::sys::link_patches();
     esp_idf_svc::log::EspLogger::initialize_default();
 
-    let sysloop = EspSystemEventLoop::take()?;
-
     let peripherals = Peripherals::take().unwrap();
+    let sys_loop = EspSystemEventLoop::take()?;
+    let nvs = EspDefaultNvsPartition::take()?;
 
     let config = get_config();
 
@@ -62,9 +62,6 @@ fn main() -> Result<()> {
         ..Default::default()
     };
     let mut server = EspHttpServer::new(&server_configuration)?;
-
-    let sys_loop = EspSystemEventLoop::take()?;
-    let nvs = EspDefaultNvsPartition::take()?;
 
     server.fn_handler::<anyhow::Error, _>("/camera.jpg", Method::Get, move |request| {
         let framebuffer = camera.get_framebuffer();
