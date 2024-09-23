@@ -63,6 +63,9 @@ fn main() -> Result<()> {
     };
     let mut server = EspHttpServer::new(&server_configuration)?;
 
+    let sys_loop = EspSystemEventLoop::take()?;
+    let nvs = EspDefaultNvsPartition::take()?;
+
     server.fn_handler::<anyhow::Error, _>("/camera.jpg", Method::Get, move |request| {
         let framebuffer = camera.get_framebuffer();
 
