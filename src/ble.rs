@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use anyhow::bail;
 use esp32_nimble::utilities::BleUuid;
-use esp32_nimble::{BLEAdvertising, BLEAdvertisementData, BLEScan, BLEServer, NimbleProperties};
+use esp32_nimble::{BLEAdvertisementData, BLEAdvertising, BLEScan, BLEServer, NimbleProperties};
 use lazy_static::lazy_static;
 use log::{info, warn};
 use tokio::select;
