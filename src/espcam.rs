@@ -1,7 +1,6 @@
 use std::marker::PhantomData;
 
-use esp_idf_svc::hal::gpio::*;
-use esp_idf_svc::hal::peripheral::Peripheral;
+use esp_idf_svc::hal::{gpio::*, ledc::*, peripheral::Peripheral};
 use esp_idf_svc::sys::*;
 
 pub struct FrameBuffer<'a> {
@@ -221,7 +220,8 @@ pub struct Camera<'a> {
 }
 
 impl<'a> Camera<'a> {
-    pub fn new(
+    #[allow(unused_variables)]
+    pub fn new<C, T>(
         pin_pwdn: Option<impl Peripheral<P = impl InputPin + OutputPin> + 'a>,
         pin_xclk: impl Peripheral<P = impl InputPin + OutputPin> + 'a,
         pin_d0: impl Peripheral<P = impl InputPin + OutputPin> + 'a,
@@ -237,9 +237,15 @@ impl<'a> Camera<'a> {
         pin_pclk: impl Peripheral<P = impl InputPin + OutputPin> + 'a,
         pin_sda: impl Peripheral<P = impl InputPin + OutputPin> + 'a,
         pin_scl: impl Peripheral<P = impl InputPin + OutputPin> + 'a,
+        ledc_channel: impl Peripheral<P = C> + 'a,
+        ledc_timer: impl Peripheral<P = T> + 'a,
         pixel_format: camera::pixformat_t,
         frame_size: camera::framesize_t,
-    ) -> Result<Self, EspError> {
+    ) -> Result<Self, EspError>
+    where
+        C: LedcChannel<SpeedMode = <T as LedcTimer>::SpeedMode>,
+        T: LedcTimer,
+    {
         esp_idf_svc::hal::into_ref!(
             pin_xclk, pin_d0, pin_d1, pin_d2, pin_d3, pin_d4, pin_d5, pin_d6, pin_d7, pin_vsync,
             pin_href, pin_pclk, pin_sda, pin_scl
@@ -262,14 +268,14 @@ impl<'a> Camera<'a> {
             pin_pclk: pin_pclk.pin(),
 
             xclk_freq_hz: 20000000,
-            ledc_timer: esp_idf_svc::sys::ledc_timer_t_LEDC_TIMER_0,
-            ledc_channel: esp_idf_svc::sys::ledc_channel_t_LEDC_CHANNEL_0,
+            ledc_channel: C::channel(),
+            ledc_timer: T::timer(),
 
             pixel_format,
             frame_size,
 
             jpeg_quality: 12,
-            fb_count: 1,
+            fb_count: 2,
             grab_mode: camera::camera_grab_mode_t_CAMERA_GRAB_WHEN_EMPTY,
 
             fb_location: camera::camera_fb_location_t_CAMERA_FB_IN_PSRAM,
