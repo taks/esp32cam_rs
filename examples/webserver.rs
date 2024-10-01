@@ -35,6 +35,8 @@ fn main() -> Result<()> {
         peripherals.pins.gpio13, // pin_pclk
         peripherals.pins.gpio4,  // pin_sda
         peripherals.pins.gpio5,  // pin_scl
+        peripherals.ledc.channel0,
+        peripherals.ledc.timer0,
         esp_idf_svc::sys::camera::pixformat_t_PIXFORMAT_JPEG,
         esp_idf_svc::sys::camera::framesize_t_FRAMESIZE_UXGA,
     )
