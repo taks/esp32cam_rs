@@ -4,8 +4,11 @@ use esp_idf_svc::{
     hal::{gpio::AnyIOPin, peripherals::Peripherals},
     http::{server::EspHttpServer, Method},
     io::Write,
-    wifi::{AccessPointConfiguration, AuthMethod, BlockingWifi, Configuration, EspWifi},
     nvs::EspDefaultNvsPartition,
+    wifi::{
+        AccessPointConfiguration, AuthMethod, BlockingWifi, ClientConfiguration, Configuration,
+        EspWifi,
+    },
 };
 use espcam::{config::get_config, espcam::Camera};
 
@@ -47,16 +50,33 @@ fn main() -> Result<()> {
         sys_loop,
     )?;
 
-    wifi.set_configuration(&Configuration::AccessPoint(AccessPointConfiguration {
-        ssid: config.wifi_ssid.try_into().unwrap(),
-        ssid_hidden: false,
-        password: config.wifi_psk.try_into().unwrap(),
-        auth_method: AuthMethod::WPA2Personal,
-        channel: 11,
-        ..Default::default()
-    }))?;
+    if config.accss_point {
+        wifi.set_configuration(&Configuration::AccessPoint(AccessPointConfiguration {
+            ssid: config.wifi_ssid.try_into().unwrap(),
+            ssid_hidden: false,
+            password: config.wifi_psk.try_into().unwrap(),
+            auth_method: AuthMethod::WPA2Personal,
+            channel: 11,
+            ..Default::default()
+        }))?;
+        wifi.start()?;
+    } else {
+        // wifi.set_configuration(&Configuration::Client(ClientConfiguration::default()))?;
+        // wifi.start()?;
+        // let ap_infos = wifi.scan()?;
+        // let ours = ap_infos.into_iter().find(|a| a.ssid == config.wifi_ssid);
+        wifi.set_configuration(&Configuration::Client(ClientConfiguration {
+            ssid: config.wifi_ssid.try_into().unwrap(),
+            password: config.wifi_psk.try_into().unwrap(),
+            // channel: ours.map(|x| x.channel),
+            channel: None,
+            auth_method: AuthMethod::WPA2Personal,
+            ..Default::default()
+        }))?;
+        wifi.start()?;
+        wifi.connect()?;
+    }
 
-    wifi.start()?;
     wifi.wait_netif_up()?;
 
     let server_configuration = esp_idf_svc::http::server::Configuration {
