@@ -6,6 +6,8 @@ pub struct Config {
     wifi_ssid: &'static str,
     #[default("")]
     wifi_psk: &'static str,
+    #[default(true)]
+    accss_point: bool,
     #[default("")]
     bot_token: &'static str,
     #[default(0)]
