@@ -7,14 +7,20 @@ use espcam::espcam::Camera;
 
 pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static>>>) -> Result<()> {
     server.fn_handler::<anyhow::Error, _>("/", Method::Get, |request| {
-        let headers = [("Content-Type", "text/html"), ("Content-Encoding", "gzip")];
+        // let headers = [("Content-Type", "text/html"), ("Content-Encoding", "gzip")];
+        // let mut response = request.into_response(200, Some("OK"), &headers).unwrap();
+        // response.write_all(include_bytes!("index_ov2640.html.gz"))?;
+
+        let headers = [("Content-Type", "text/html")];
         let mut response = request.into_response(200, Some("OK"), &headers).unwrap();
-        response.write_all(include_bytes!("index_ov2640.html.gz"))?;
+        response.write_all(include_bytes!("index_ov2640.html"))?;
+
         Ok(())
     })?;
 
+    let camera_ = camera.clone();
     server.fn_handler::<anyhow::Error, _>("/capture", Method::Get, move |request| {
-        let camera = camera.lock().unwrap();
+        let camera = camera_.lock().unwrap();
         let framebuffer = camera.get_framebuffer();
 
         if let Some(framebuffer) = framebuffer {
@@ -33,5 +39,16 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
         Ok(())
     })?;
 
+    let camera_ = camera.clone();
+    server.fn_handler::<anyhow::Error, _>("/control", Method::Get, move |request| {
+        let camera = camera_.lock().unwrap();
+        let mut response = request.into_response(200, Some("OK"), &[])?;
+
+
+        Ok(())
+    })?;
+
     Ok(())
 }
+
+fn parse_get(req :httpd_req_t *req)
