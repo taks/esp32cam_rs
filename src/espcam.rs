@@ -39,121 +39,104 @@ impl Drop for FrameBuffer<'_> {
     }
 }
 
-pub struct CameraSensor<'a> {
-    sensor: *mut camera::sensor_t,
-    _p: PhantomData<&'a camera::sensor_t>,
-}
+pub struct CameraSensor<'a>(&'a mut camera::sensor_t);
 
 impl<'a> CameraSensor<'a> {
-    pub fn init_status(&self) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).init_status.unwrap()(self.sensor) })
+    pub fn init_status(&mut self) -> Result<(), EspError> {
+        esp!(unsafe { self.0.init_status.unwrap()(self.0) })
     }
-    pub fn reset(&self) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).reset.unwrap()(self.sensor) })
+    pub fn reset(&mut self) -> Result<(), EspError> {
+        esp!(unsafe { self.0.reset.unwrap()(self.0) })
     }
-    pub fn set_pixformat(&self, format: camera::pixformat_t) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_pixformat.unwrap()(self.sensor, format) })
+    pub fn set_pixformat(&mut self, format: camera::pixformat_t) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_pixformat.unwrap()(self.0, format) })
     }
-    pub fn set_framesize(&self, framesize: camera::framesize_t) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_framesize.unwrap()(self.sensor, framesize) })
+    pub fn set_framesize(&mut self, framesize: camera::framesize_t) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_framesize.unwrap()(self.0, framesize) })
     }
-    pub fn set_contrast(&self, level: i32) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_contrast.unwrap()(self.sensor, level) })
+    pub fn set_contrast(&mut self, level: i32) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_contrast.unwrap()(self.0, level) })
     }
-    pub fn set_brightness(&self, level: i32) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_brightness.unwrap()(self.sensor, level) })
+    pub fn set_brightness(&mut self, level: i32) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_brightness.unwrap()(self.0, level) })
     }
-    pub fn set_saturation(&self, level: i32) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_saturation.unwrap()(self.sensor, level) })
+    pub fn set_saturation(&mut self, level: i32) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_saturation.unwrap()(self.0, level) })
     }
-    pub fn set_sharpness(&self, level: i32) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_sharpness.unwrap()(self.sensor, level) })
+    pub fn set_sharpness(&mut self, level: i32) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_sharpness.unwrap()(self.0, level) })
     }
-    pub fn set_denoise(&self, level: i32) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_denoise.unwrap()(self.sensor, level) })
+    pub fn set_denoise(&mut self, level: i32) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_denoise.unwrap()(self.0, level) })
     }
-    pub fn set_gainceiling(&self, gainceiling: camera::gainceiling_t) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_gainceiling.unwrap()(self.sensor, gainceiling) })
+    pub fn set_gainceiling(&mut self, gainceiling: camera::gainceiling_t) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_gainceiling.unwrap()(self.0, gainceiling) })
     }
-    pub fn set_quality(&self, quality: i32) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_quality.unwrap()(self.sensor, quality) })
+    pub fn set_quality(&mut self, quality: i32) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_quality.unwrap()(self.0, quality) })
     }
-    pub fn set_colorbar(&self, enable: bool) -> Result<(), EspError> {
-        esp!(unsafe {
-            (*self.sensor).set_colorbar.unwrap()(self.sensor, if enable { 1 } else { 0 })
-        })
+    pub fn set_colorbar(&mut self, enable: bool) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_colorbar.unwrap()(self.0, if enable { 1 } else { 0 }) })
     }
-    pub fn set_whitebal(&self, enable: bool) -> Result<(), EspError> {
-        esp!(unsafe {
-            (*self.sensor).set_whitebal.unwrap()(self.sensor, if enable { 1 } else { 0 })
-        })
+    pub fn set_whitebal(&mut self, enable: bool) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_whitebal.unwrap()(self.0, if enable { 1 } else { 0 }) })
     }
-    pub fn set_gain_ctrl(&self, enable: bool) -> Result<(), EspError> {
-        esp!(unsafe {
-            (*self.sensor).set_gain_ctrl.unwrap()(self.sensor, if enable { 1 } else { 0 })
-        })
+    pub fn set_gain_ctrl(&mut self, enable: bool) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_gain_ctrl.unwrap()(self.0, if enable { 1 } else { 0 }) })
     }
-    pub fn set_exposure_ctrl(&self, enable: bool) -> Result<(), EspError> {
-        esp!(unsafe {
-            (*self.sensor).set_exposure_ctrl.unwrap()(self.sensor, if enable { 1 } else { 0 })
-        })
+    pub fn set_exposure_ctrl(&mut self, enable: bool) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_exposure_ctrl.unwrap()(self.0, if enable { 1 } else { 0 }) })
     }
-    pub fn set_hmirror(&self, enable: bool) -> Result<(), EspError> {
-        esp!(unsafe {
-            (*self.sensor).set_hmirror.unwrap()(self.sensor, if enable { 1 } else { 0 })
-        })
+    pub fn set_hmirror(&mut self, enable: bool) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_hmirror.unwrap()(self.0, if enable { 1 } else { 0 }) })
     }
-    pub fn set_vflip(&self, enable: bool) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_vflip.unwrap()(self.sensor, if enable { 1 } else { 0 }) })
+    pub fn set_vflip(&mut self, enable: bool) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_vflip.unwrap()(self.0, if enable { 1 } else { 0 }) })
     }
-    pub fn set_aec2(&self, enable: bool) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_aec2.unwrap()(self.sensor, if enable { 1 } else { 0 }) })
+    pub fn set_aec2(&mut self, enable: bool) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_aec2.unwrap()(self.0, if enable { 1 } else { 0 }) })
     }
-    pub fn set_awb_gain(&self, enable: bool) -> Result<(), EspError> {
-        esp!(unsafe {
-            (*self.sensor).set_awb_gain.unwrap()(self.sensor, if enable { 1 } else { 0 })
-        })
+    pub fn set_awb_gain(&mut self, enable: bool) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_awb_gain.unwrap()(self.0, if enable { 1 } else { 0 }) })
     }
-    pub fn set_agc_gain(&self, gain: i32) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_agc_gain.unwrap()(self.sensor, gain) })
+    pub fn set_agc_gain(&mut self, gain: i32) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_agc_gain.unwrap()(self.0, gain) })
     }
-    pub fn set_aec_value(&self, gain: i32) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_aec_value.unwrap()(self.sensor, gain) })
+    pub fn set_aec_value(&mut self, gain: i32) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_aec_value.unwrap()(self.0, gain) })
     }
-    pub fn set_special_effect(&self, effect: i32) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_special_effect.unwrap()(self.sensor, effect) })
+    pub fn set_special_effect(&mut self, effect: i32) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_special_effect.unwrap()(self.0, effect) })
     }
-    pub fn set_wb_mode(&self, mode: i32) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_wb_mode.unwrap()(self.sensor, mode) })
+    pub fn set_wb_mode(&mut self, mode: i32) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_wb_mode.unwrap()(self.0, mode) })
     }
-    pub fn set_ae_level(&self, level: i32) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_ae_level.unwrap()(self.sensor, level) })
+    pub fn set_ae_level(&mut self, level: i32) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_ae_level.unwrap()(self.0, level) })
     }
-    pub fn set_dcw(&self, enable: bool) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_dcw.unwrap()(self.sensor, if enable { 1 } else { 0 }) })
+    pub fn set_dcw(&mut self, enable: bool) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_dcw.unwrap()(self.0, if enable { 1 } else { 0 }) })
     }
-    pub fn set_bpc(&self, enable: bool) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_bpc.unwrap()(self.sensor, if enable { 1 } else { 0 }) })
+    pub fn set_bpc(&mut self, enable: bool) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_bpc.unwrap()(self.0, if enable { 1 } else { 0 }) })
     }
-    pub fn set_wpc(&self, enable: bool) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_wpc.unwrap()(self.sensor, if enable { 1 } else { 0 }) })
+    pub fn set_wpc(&mut self, enable: bool) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_wpc.unwrap()(self.0, if enable { 1 } else { 0 }) })
     }
-    pub fn set_raw_gma(&self, enable: bool) -> Result<(), EspError> {
-        esp!(unsafe {
-            (*self.sensor).set_raw_gma.unwrap()(self.sensor, if enable { 1 } else { 0 })
-        })
+    pub fn set_raw_gma(&mut self, enable: bool) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_raw_gma.unwrap()(self.0, if enable { 1 } else { 0 }) })
     }
-    pub fn set_lenc(&self, enable: bool) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_lenc.unwrap()(self.sensor, if enable { 1 } else { 0 }) })
+    pub fn set_lenc(&mut self, enable: bool) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_lenc.unwrap()(self.0, if enable { 1 } else { 0 }) })
     }
-    pub fn get_reg(&self, reg: i32, mask: i32) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).get_reg.unwrap()(self.sensor, reg, mask) })
+    pub fn get_reg(&mut self, reg: i32, mask: i32) -> Result<(), EspError> {
+        esp!(unsafe { self.0.get_reg.unwrap()(self.0, reg, mask) })
     }
-    pub fn set_reg(&self, reg: i32, mask: i32, value: i32) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_reg.unwrap()(self.sensor, reg, mask, value) })
+    pub fn set_reg(&mut self, reg: i32, mask: i32, value: i32) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_reg.unwrap()(self.0, reg, mask, value) })
     }
     pub fn set_res_raw(
-        &self,
+        &mut self,
         start_x: i32,
         start_y: i32,
         end_x: i32,
@@ -168,25 +151,14 @@ impl<'a> CameraSensor<'a> {
         binning: bool,
     ) -> Result<(), EspError> {
         esp!(unsafe {
-            (*self.sensor).set_res_raw.unwrap()(
-                self.sensor,
-                start_x,
-                start_y,
-                end_x,
-                end_y,
-                offset_x,
-                offset_y,
-                total_x,
-                total_y,
-                output_x,
-                output_y,
-                scale,
-                binning,
+            self.0.set_res_raw.unwrap()(
+                self.0, start_x, start_y, end_x, end_y, offset_x, offset_y, total_x, total_y,
+                output_x, output_y, scale, binning,
             )
         })
     }
     pub fn set_pll(
-        &self,
+        &mut self,
         bypass: i32,
         mul: i32,
         sys: i32,
@@ -197,21 +169,11 @@ impl<'a> CameraSensor<'a> {
         pclk: i32,
     ) -> Result<(), EspError> {
         esp!(unsafe {
-            (*self.sensor).set_pll.unwrap()(
-                self.sensor,
-                bypass,
-                mul,
-                sys,
-                root,
-                pre,
-                seld5,
-                pclken,
-                pclk,
-            )
+            self.0.set_pll.unwrap()(self.0, bypass, mul, sys, root, pre, seld5, pclken, pclk)
         })
     }
-    pub fn set_xclk(&self, timer: i32, xclk: i32) -> Result<(), EspError> {
-        esp!(unsafe { (*self.sensor).set_xclk.unwrap()(self.sensor, timer, xclk) })
+    pub fn set_xclk(&mut self, timer: i32, xclk: i32) -> Result<(), EspError> {
+        esp!(unsafe { self.0.set_xclk.unwrap()(self.0, timer, xclk) })
     }
 }
 
@@ -302,10 +264,7 @@ impl<'a> Camera<'a> {
     }
 
     pub fn sensor(&self) -> CameraSensor<'a> {
-        CameraSensor {
-            sensor: unsafe { camera::esp_camera_sensor_get() },
-            _p: PhantomData,
-        }
+        CameraSensor(unsafe { camera::esp_camera_sensor_get().as_mut().unwrap() })
     }
 }
 

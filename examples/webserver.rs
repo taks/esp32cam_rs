@@ -86,12 +86,13 @@ fn main() -> Result<()> {
     let mut server = EspHttpServer::new(&server_configuration)?;
 
     server.fn_handler::<anyhow::Error, _>("/", Method::Get, |request| {
-        let mut response = request.into_ok_response()?;
+        let headers = [("Content-Type", "text/html"), ("Content-Encoding", "gzip")];
+        let mut response = request.into_response(200, Some("OK"), &headers).unwrap();
         response.write_all(include_bytes!("index_ov2640.html.gz"))?;
         Ok(())
     })?;
 
-    server.fn_handler::<anyhow::Error, _>("/camera.jpg", Method::Get, move |request| {
+    server.fn_handler::<anyhow::Error, _>("/capture", Method::Get, move |request| {
         let framebuffer = camera.get_framebuffer();
 
         if let Some(framebuffer) = framebuffer {
@@ -101,11 +102,10 @@ fn main() -> Result<()> {
                 ("Content-Type", "image/jpeg"),
                 ("Content-Length", &data.len().to_string()),
             ];
-            let mut response = request.into_response(200, Some("OK"), &headers).unwrap();
+            let mut response = request.into_response(200, Some("OK"), &headers)?;
             response.write_all(data)?;
         } else {
-            let mut response = request.into_ok_response()?;
-            response.write_all("no framebuffer".as_bytes())?;
+            request.into_status_response(500)?;
         }
 
         Ok(())
