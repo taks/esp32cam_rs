@@ -40,7 +40,7 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
     })?;
 
     let camera_ = camera.clone();
-    server.fn_handler::<anyhow::Error, _>("/control", Method::Get, move |request| {
+    server.fn_handler::<anyhow::Error, _>("/control", Method::Post, move |request| {
         let camera = camera_.lock().unwrap();
         let mut response = request.into_response(200, Some("OK"), &[])?;
 
@@ -50,5 +50,3 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
 
     Ok(())
 }
-
-fn parse_get(req :httpd_req_t *req)
