@@ -11,15 +11,21 @@ struct Data {
     brightness: i8,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+struct Control {
+    var: String,
+    val: String,
+}
+
 pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static>>>) -> Result<()> {
     server.fn_handler::<anyhow::Error, _>("/", Method::Get, |request| {
-        // let headers = [("Content-Type", "text/html"), ("Content-Encoding", "gzip")];
-        // let mut response = request.into_response(200, Some("OK"), &headers).unwrap();
-        // response.write_all(include_bytes!("index_ov2640.html.gz"))?;
-
-        let headers = [("Content-Type", "text/html")];
+        let headers = [("Content-Type", "text/html"), ("Content-Encoding", "gzip")];
         let mut response = request.into_response(200, Some("OK"), &headers).unwrap();
-        response.write_all(include_bytes!("index_ov2640.html"))?;
+        response.write_all(include_bytes!("index_ov2640.html.gz"))?;
+
+        // let headers = [("Content-Type", "text/html")];
+        // let mut response = request.into_response(200, Some("OK"), &headers).unwrap();
+        // response.write_all(include_bytes!("index_ov2640.html"))?;
 
         Ok(())
     })?;
@@ -46,9 +52,17 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
     })?;
 
     let camera_ = camera.clone();
-    server.fn_handler::<anyhow::Error, _>("/control", Method::Post, move |request| {
+    server.fn_handler::<anyhow::Error, _>("/control", Method::Post, move |mut request| {
         let camera = camera_.lock().unwrap();
-        let mut response = request.into_response(200, Some("OK"), &[])?;
+        let sensor = camera.sensor();
+
+        let mut buf = [0u8; 100];
+        request.read(&mut buf)?;
+        let c = serde_json::from_slice::<Control>(&buf);
+
+        ::log::info!("/control : {:?}", &c);
+
+        request.into_response(200, Some("OK"), &[])?;
 
         Ok(())
     })?;
