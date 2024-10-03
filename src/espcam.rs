@@ -3,33 +3,31 @@ use std::marker::PhantomData;
 use esp_idf_svc::hal::{gpio::*, ledc::*, peripheral::Peripheral};
 use esp_idf_svc::sys::*;
 
-pub struct FrameBuffer<'a> {
-    fb: &'a mut camera::camera_fb_t,
-}
+pub struct FrameBuffer<'a>(&'a mut camera::camera_fb_t);
 
 impl<'a> FrameBuffer<'a> {
     pub fn data(&self) -> &'a [u8] {
-        unsafe { std::slice::from_raw_parts(self.fb.buf, self.fb.len) }
+        unsafe { std::slice::from_raw_parts(self.0.buf, self.0.len) }
     }
 
     pub fn width(&self) -> usize {
-        self.fb.width
+        self.0.width
     }
 
     pub fn height(&self) -> usize {
-        self.fb.height
+        self.0.height
     }
 
     pub fn format(&self) -> camera::pixformat_t {
-        self.fb.format
+        self.0.format
     }
 
     pub fn timestamp(&self) -> camera::timeval {
-        self.fb.timestamp
+        self.0.timestamp
     }
 
-    pub fn fb_return(&mut self) {
-        unsafe { camera::esp_camera_fb_return(self.fb) }
+    fn fb_return(&mut self) {
+        unsafe { camera::esp_camera_fb_return(self.0) }
     }
 }
 
@@ -258,9 +256,7 @@ impl<'a> Camera<'a> {
 
     pub fn get_framebuffer(&self) -> Option<FrameBuffer> {
         let fb = unsafe { camera::esp_camera_fb_get().as_mut() };
-
-        //unsafe { camera::esp_camera_fb_return(fb); }
-        fb.map(|fb| FrameBuffer { fb })
+        fb.map(|fb| FrameBuffer(fb))
     }
 
     pub fn sensor(&self) -> CameraSensor<'a> {
@@ -273,3 +269,5 @@ impl<'a> Drop for Camera<'a> {
         esp!(unsafe { camera::esp_camera_deinit() }).expect("error during esp_camera_deinit")
     }
 }
+unsafe impl Send for Camera<'_> {}
+unsafe impl Sync for Camera<'_> {}
