@@ -1,5 +1,7 @@
 mod server;
 
+use std::sync::{Arc, Mutex};
+
 use anyhow::Result;
 use esp_idf_svc::{
     eventloop::EspSystemEventLoop,
@@ -23,7 +25,7 @@ fn main() -> Result<()> {
 
     let config = get_config();
 
-    let camera = Camera::new(
+    let camera: Camera<'static> = Camera::new(
         None::<AnyIOPin>,        // pin_pwdn
         peripherals.pins.gpio15, // pin_xclk
         peripherals.pins.gpio11, // pin_d0
@@ -85,7 +87,7 @@ fn main() -> Result<()> {
         ..Default::default()
     };
     let mut server = EspHttpServer::new(&server_configuration)?;
-    server::set_handlers(&mut server, Arc::new(Mutex::new(camera)));
+    server::set_handlers(&mut server, Arc::new(Mutex::new(camera)))?;
 
     loop {
         std::thread::sleep(std::time::Duration::from_millis(1000));

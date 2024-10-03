@@ -5,7 +5,7 @@ use esp_idf_svc::http::{server::EspHttpServer, Method};
 use esp_idf_svc::io::Write;
 use espcam::espcam::Camera;
 
-pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera>>) -> Result<()> {
+pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static>>>) -> Result<()> {
     server.fn_handler::<anyhow::Error, _>("/", Method::Get, |request| {
         let headers = [("Content-Type", "text/html"), ("Content-Encoding", "gzip")];
         let mut response = request.into_response(200, Some("OK"), &headers).unwrap();
@@ -13,9 +13,9 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera>>) -> R
         Ok(())
     })?;
 
-    let a = camera.clone();
     server.fn_handler::<anyhow::Error, _>("/capture", Method::Get, move |request| {
-        let framebuffer = a.lock().unwrap().get_framebuffer();
+        let camera = camera.lock().unwrap();
+        let framebuffer = camera.get_framebuffer();
 
         if let Some(framebuffer) = framebuffer {
             let data = framebuffer.data();
