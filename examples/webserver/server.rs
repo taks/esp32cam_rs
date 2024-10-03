@@ -4,6 +4,12 @@ use anyhow::Result;
 use esp_idf_svc::http::{server::EspHttpServer, Method};
 use esp_idf_svc::io::Write;
 use espcam::espcam::Camera;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+struct Data {
+    brightness: i8,
+}
 
 pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static>>>) -> Result<()> {
     server.fn_handler::<anyhow::Error, _>("/", Method::Get, |request| {
@@ -44,6 +50,22 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
         let camera = camera_.lock().unwrap();
         let mut response = request.into_response(200, Some("OK"), &[])?;
 
+        Ok(())
+    })?;
+
+    let camera_ = camera.clone();
+    server.fn_handler::<anyhow::Error, _>("/status", Method::Get, move |request| {
+        let camera = camera_.lock().unwrap();
+        let sensor = camera.sensor();
+        let status = sensor.status();
+        let data = Data {
+            brightness: status.brightness,
+        };
+
+        let headers = [];
+        let mut response = request.into_response(200, Some("OK"), &headers)?;
+        let json = serde_json::to_string(&data)?;
+        response.write_all(json.as_bytes())?;
 
         Ok(())
     })?;

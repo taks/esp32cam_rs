@@ -1,5 +1,6 @@
 use std::marker::PhantomData;
 
+use camera::camera_status_t;
 use esp_idf_svc::hal::{gpio::*, ledc::*, peripheral::Peripheral};
 use esp_idf_svc::sys::*;
 
@@ -40,6 +41,9 @@ impl Drop for FrameBuffer<'_> {
 pub struct CameraSensor<'a>(&'a mut camera::sensor_t);
 
 impl<'a> CameraSensor<'a> {
+    pub fn status(&self) -> &camera_status_t {
+        &self.0.status
+    }
     pub fn init_status(&mut self) -> Result<(), EspError> {
         esp!(unsafe { self.0.init_status.unwrap()(self.0) })
     }
