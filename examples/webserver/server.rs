@@ -14,7 +14,8 @@ struct Data {
 #[derive(Serialize, Deserialize, Debug)]
 struct Control {
     var: String,
-    val: String,
+    val: i32,
+    // val: String,
 }
 
 pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static>>>) -> Result<()> {
@@ -54,13 +55,20 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
     let camera_ = camera.clone();
     server.fn_handler::<anyhow::Error, _>("/control", Method::Post, move |mut request| {
         let camera = camera_.lock().unwrap();
-        let sensor = camera.sensor();
+        let mut sensor = camera.sensor();
 
         let mut buf = [0u8; 100];
         request.read(&mut buf)?;
         ::log::info!("{:?}", std::str::from_utf8(&buf));
-        let c = serde_json::from_slice::<Control>(&buf);
+        let c = serde_json::from_slice::<Control>(&buf)?;
         ::log::info!("/control : {:?}", &c);
+
+        let val = c.val;
+        match &*c.var {
+            "quality" => sensor.set_quality(val)?,
+            "contrast" => sensor.set_contrast(val)?,
+            _ => return Err(anyhow::Error::msg(c.var)),
+        };
 
         request.into_response(200, Some("OK"), &[])?;
 
