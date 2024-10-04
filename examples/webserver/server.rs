@@ -58,15 +58,16 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
         let mut sensor = camera.sensor();
 
         let mut buf = [0u8; 100];
-        request.read(&mut buf)?;
-        ::log::info!("{:?}", std::str::from_utf8(&buf));
-        let c = serde_json::from_slice::<Control>(&buf)?;
-        ::log::info!("/control : {:?}", &c);
+        let read_len = request.read(&mut buf)?;
+        let buf = &buf[..read_len];
+
+        let c = serde_json::from_slice::<Control>(buf)?;
 
         let val = c.val;
         match &*c.var {
             "quality" => sensor.set_quality(val)?,
             "contrast" => sensor.set_contrast(val)?,
+            "brightness" => sensor.set_brightness(val)?,
             _ => return Err(anyhow::Error::msg(c.var)),
         };
 

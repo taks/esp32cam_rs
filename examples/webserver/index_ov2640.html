@@ -955,11 +955,11 @@ document.addEventListener('DOMContentLoaded', function (event) {
         break
       case 'range':
       case 'select-one':
-        value = el.value
+        value = el.valueAsNumber
         break
       case 'button':
       case 'submit':
-        value = '1'
+        value = 1
         break
       default:
         return
