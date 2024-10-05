@@ -1,6 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use anyhow::Result;
+use const_format::concatcp;
 use esp_idf_svc::http::{server::EspHttpServer, Method};
 use esp_idf_svc::io::Write;
 use espcam::espcam::Camera;
@@ -17,6 +18,11 @@ struct Control {
     val: i32,
     // val: String,
 }
+
+#[allow(dead_code)]
+const PART_BOUNDARY: &str = "123456789000000000000987654321";
+const STREAM_CONTENT_TYPE: &str = concatcp!("multipart/x-mixed-replace;boundary=", PART_BOUNDARY);
+const STREAM_BOUNDARY: &str = concatcp!("\r\n--", PART_BOUNDARY, "\r\n");
 
 pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static>>>) -> Result<()> {
     server.fn_handler::<anyhow::Error, _>("/", Method::Get, |request| {
@@ -50,6 +56,29 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
         }
 
         Ok(())
+    })?;
+
+    let camera_ = camera.clone();
+    server.fn_handler::<anyhow::Error, _>("/stream", Method::Get, move |request| {
+        let mut response =
+            request.into_response(200, Some("OK"), &[("Content-Type", STREAM_CONTENT_TYPE)])?;
+
+        ::log::info!("/stream start");
+
+        loop {
+            let camera = camera_.lock().unwrap();
+            let jpg = camera.get_framebuffer().unwrap().data();
+            response.write_all(
+                format!(
+                    "Content-Type: image/jpeg\r\nContent-Length: {}\r\n\r\n",
+                    jpg.len()
+                )
+                .as_bytes(),
+            )?;
+            response.write_all(jpg)?;
+            response.flush()?;
+            response.write_all(STREAM_BOUNDARY.as_bytes())?;
+        }
     })?;
 
     let camera_ = camera.clone();

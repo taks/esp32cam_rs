@@ -696,6 +696,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bstr",
+ "const_format",
  "embedded-svc",
  "embuild",
  "esp-idf-svc",
