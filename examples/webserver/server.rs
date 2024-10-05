@@ -6,11 +6,42 @@ use esp_idf_svc::http::{server::EspHttpServer, Method};
 use esp_idf_svc::io::Write;
 use espcam::espcam::Camera;
 use serde::{Deserialize, Serialize};
+use esp_idf_svc::sys::camera::{framesize_t, camera_status_t};
 
 #[derive(Serialize, Deserialize)]
-struct Data {
-    brightness: i8,
+#[serde(remote = "camera_status_t")]
+pub struct CameraStatusT {
+    pub framesize: framesize_t,
+    pub scale: bool,
+    pub binning: bool,
+    pub quality: u8,
+    pub brightness: i8,
+    pub contrast: i8,
+    pub saturation: i8,
+    pub sharpness: i8,
+    pub denoise: u8,
+    pub special_effect: u8,
+    pub wb_mode: u8,
+    pub awb: u8,
+    pub awb_gain: u8,
+    pub aec: u8,
+    pub aec2: u8,
+    pub ae_level: i8,
+    pub aec_value: u16,
+    pub agc: u8,
+    pub agc_gain: u8,
+    pub gainceiling: u8,
+    pub bpc: u8,
+    pub wpc: u8,
+    pub raw_gma: u8,
+    pub lenc: u8,
+    pub hmirror: u8,
+    pub vflip: u8,
+    pub dcw: u8,
+    pub colorbar: u8,
 }
+#[derive(Serialize)]
+struct Helper<'a>(#[serde(with = "CameraStatusT")] &'a camera_status_t);
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Control {
@@ -70,12 +101,11 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
             let jpg = camera.get_framebuffer().unwrap().data();
 
             response.write_all(STREAM_BOUNDARY.as_bytes())?;
-            response.write_all(
-                format!(
-                    "Content-Type: image/jpeg\r\nContent-Length: {}\r\n\r\n",
-                    jpg.len()
-                )
-                .as_bytes(),
+
+            write!(
+                response,
+                "Content-Type: image/jpeg\r\nContent-Length: {}\r\n\r\n",
+                jpg.len()
             )?;
             response.write_all(jpg)?;
             response.flush()?;
@@ -95,9 +125,11 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
 
         let val = c.val;
         match &*c.var {
+            "framesize" => sensor.set_framesize(val.into())?,
             "quality" => sensor.set_quality(val)?,
             "contrast" => sensor.set_contrast(val)?,
             "brightness" => sensor.set_brightness(val)?,
+            "saturation" => sensor.set_saturation(val)?,
             _ => return Err(anyhow::Error::msg(c.var)),
         };
 
@@ -111,13 +143,10 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
         let camera = camera_.lock().unwrap();
         let sensor = camera.sensor();
         let status = sensor.status();
-        let data = Data {
-            brightness: status.brightness,
-        };
 
         let headers = [];
         let mut response = request.into_response(200, Some("OK"), &headers)?;
-        let json = serde_json::to_string(&data)?;
+        let json = serde_json::to_string(&Helper(status))?;
         response.write_all(json.as_bytes())?;
 
         Ok(())
