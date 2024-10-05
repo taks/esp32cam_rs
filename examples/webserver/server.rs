@@ -68,6 +68,8 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
         loop {
             let camera = camera_.lock().unwrap();
             let jpg = camera.get_framebuffer().unwrap().data();
+
+            response.write_all(STREAM_BOUNDARY.as_bytes())?;
             response.write_all(
                 format!(
                     "Content-Type: image/jpeg\r\nContent-Length: {}\r\n\r\n",
@@ -77,7 +79,6 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
             )?;
             response.write_all(jpg)?;
             response.flush()?;
-            response.write_all(STREAM_BOUNDARY.as_bytes())?;
         }
     })?;
 
