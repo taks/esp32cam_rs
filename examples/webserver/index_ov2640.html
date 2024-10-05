@@ -951,15 +951,17 @@ document.addEventListener('DOMContentLoaded', function (event) {
     let value
     switch (el.type) {
       case 'checkbox':
-        value = el.checked ? 1 : 0
+        value = el.checked ? 1 : 0;
         break
       case 'range':
+        value = el.valueAsNumber;
+        break
       case 'select-one':
-        value = el.valueAsNumber
+        value = Number(el.value);
         break
       case 'button':
       case 'submit':
-        value = 1
+        value = 1;
         break
       default:
         return
