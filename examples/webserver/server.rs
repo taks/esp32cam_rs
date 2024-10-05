@@ -125,7 +125,7 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
 
         let val = c.val;
         match &*c.var {
-            "framesize" => sensor.set_framesize(val.into())?,
+            "framesize" => sensor.set_framesize(val.try_into().unwrap())?,
             "quality" => sensor.set_quality(val)?,
             "contrast" => sensor.set_contrast(val)?,
             "brightness" => sensor.set_brightness(val)?,

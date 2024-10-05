@@ -240,7 +240,7 @@ impl<'a> Camera<'a> {
 
             jpeg_quality: 12,
             fb_count: 2,
-            grab_mode: camera::camera_grab_mode_t_CAMERA_GRAB_WHEN_EMPTY,
+            grab_mode: camera::camera_grab_mode_t_CAMERA_GRAB_LATEST,
 
             fb_location: camera::camera_fb_location_t_CAMERA_FB_IN_PSRAM,
 
