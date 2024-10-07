@@ -130,6 +130,8 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
             "contrast" => sensor.set_contrast(val)?,
             "brightness" => sensor.set_brightness(val)?,
             "saturation" => sensor.set_saturation(val)?,
+            "gainceiling" => sensor.set_gainceiling(val as _)?,
+            "colorbar" => sensor.set_colorbar(val != 0)?,
             _ => return Err(anyhow::Error::msg(c.var)),
         };
 
