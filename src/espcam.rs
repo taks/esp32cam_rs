@@ -260,7 +260,7 @@ impl<'a> Camera<'a> {
 
     pub fn get_framebuffer(&self) -> Option<FrameBuffer> {
         let fb = unsafe { camera::esp_camera_fb_get().as_mut() };
-        fb.map(|fb| FrameBuffer(fb))
+        fb.map(FrameBuffer)
     }
 
     pub fn sensor(&self) -> CameraSensor<'a> {

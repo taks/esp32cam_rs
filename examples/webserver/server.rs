@@ -4,9 +4,9 @@ use anyhow::Result;
 use const_format::concatcp;
 use esp_idf_svc::http::{server::EspHttpServer, Method};
 use esp_idf_svc::io::Write;
+use esp_idf_svc::sys::camera::{camera_status_t, framesize_t};
 use espcam::espcam::Camera;
 use serde::{Deserialize, Serialize};
-use esp_idf_svc::sys::camera::{framesize_t, camera_status_t};
 
 #[derive(Serialize, Deserialize)]
 #[serde(remote = "camera_status_t")]
@@ -132,6 +132,13 @@ pub fn set_handlers(server: &mut EspHttpServer, camera: Arc<Mutex<Camera<'static
             "saturation" => sensor.set_saturation(val)?,
             "gainceiling" => sensor.set_gainceiling(val as _)?,
             "colorbar" => sensor.set_colorbar(val != 0)?,
+            "awb" => sensor.set_whitebal(val != 0)?,
+            "agc" => sensor.set_gain_ctrl(val != 0)?,
+            "aec" => sensor.set_exposure_ctrl(val != 0)?,
+            "hmirror" => sensor.set_hmirror(val != 0)?,
+            "vflip" => sensor.set_vflip(val != 0),
+            "awb_gain" => sensor.set_awb_gain(val != 0),
+            "agc_gain" => sensor.set_agc_gain(val),
             _ => return Err(anyhow::Error::msg(c.var)),
         };
 
